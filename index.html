@@ -731,15 +731,6 @@ tr:hover td{background:#f8faff;}
         </div>
         <div class="fgrid">
           <div class="ffield">
-            <label>Property Applying For <span class="req">*</span></label>
-            <select id="propertySelect">
-              <option value="Modern Downtown Apartment - 245 Oak Ave #304">Modern Downtown Apartment - 245 Oak Ave #304</option>
-              <option value="Suburban Family Home - 782 Maple Dr">Suburban Family Home - 782 Maple Dr</option>
-              <option value="Luxury Condo - 1200 Lakeview Blvd #12B">Luxury Condo - 1200 Lakeview Blvd #12B</option>
-              <option value="Studio Loft - 430 Commerce St #5">Studio Loft - 430 Commerce St #5</option>
-            </select>
-          </div>
-          <div class="ffield">
             <label>Desired Lease Term</label>
             <select id="leaseTerm">
               <option value="">Select term...</option>
@@ -1111,7 +1102,7 @@ document.getElementById('app-form').addEventListener('submit', async (e) => {
     moving_date: document.getElementById('movingDate').value || null,
     occupation: document.getElementById('occupation').value.trim(),
     occupants: document.getElementById('occupants').value || null,
-    property_applied: document.getElementById('propertySelect').value,
+
     lease_term: document.getElementById('leaseTerm').value,
     annual_income: document.getElementById('income').value.trim(),
     credit_score: document.getElementById('creditScore').value,
