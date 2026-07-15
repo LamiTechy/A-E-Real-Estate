@@ -1,0 +1,8 @@
+CREATE TABLE ae_applications (
+     id SERIAL PRIMARY KEY, first_name TEXT, last_name TEXT, phone TEXT, email TEXT,
+     app_date TEXT, moving_date TEXT, occupation TEXT, occupants TEXT,
+     property_applied TEXT, lease_term TEXT, annual_income TEXT, credit_score TEXT,
+     notes TEXT, has_vehicle TEXT, has_pets TEXT, been_evicted TEXT,
+     addr_street1 TEXT, addr_street2 TEXT, addr_city TEXT, addr_state TEXT, addr_zip TEXT,
+     payment_methods TEXT, signature_data TEXT, submitted_at TIMESTAMPTZ
+   );

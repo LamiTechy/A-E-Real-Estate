@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>A&E Real Estate & Properties — Rental Application</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -977,12 +977,38 @@ tr:hover td{background:#f8faff;}
 </div>
 
 <script>
-const SUPABASE_URL = 'https://ucvvclumdgmeftsjmxlj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjdnZjbHVtZGdtZWZ0c2pteGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MTc0NTEsImV4cCI6MjA5MDA5MzQ1MX0.S2O4AVw-2xo1ujzWxOdTXfEibE-4yiRe4HjQ0gmdBPc';
-const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// 1. First, run this SQL in your Neon console to create the table:
+//    CREATE TABLE ae_applications (
+//      id SERIAL PRIMARY KEY, first_name TEXT, last_name TEXT, phone TEXT, email TEXT,
+//      app_date TEXT, moving_date TEXT, occupation TEXT, occupants TEXT,
+//      property_applied TEXT, lease_term TEXT, annual_income TEXT, credit_score TEXT,
+//      notes TEXT, has_vehicle TEXT, has_pets TEXT, been_evicted TEXT,
+//      addr_street1 TEXT, addr_street2 TEXT, addr_city TEXT, addr_state TEXT, addr_zip TEXT,
+//      payment_methods TEXT, signature_data TEXT, submitted_at TIMESTAMPTZ
+//    );
+//
+// 2. Paste your Neon connection string below:
+const NEON_CONNECTION_STRING = 'postgresql://neondb_owner:npg_1jZkIY0qSgyH@ep-quiet-cell-atnvzqn9-pooler.c-9.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
 const ADMIN_PASSWORD = 'admin123';
-const TABLE = 'ae_applications';
+
+function createNeonClient(connStr) {
+  const u = new URL(connStr);
+  const auth = btoa(decodeURIComponent(u.username) + ':' + decodeURIComponent(u.password));
+  const endpoint = 'https://' + u.hostname + '/sql';
+  return {
+    query: async (sql, params) => {
+      const r = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Authorization': 'Basic ' + auth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: sql, params: params || [] })
+      });
+      if (!r.ok) { const t = await r.text(); throw new Error(t); }
+      return r.json();
+    }
+  };
+}
+
+const db = createNeonClient(NEON_CONNECTION_STRING);
 
 let currentStep = 1;
 const totalSteps = 5;
@@ -1103,13 +1129,15 @@ document.getElementById('app-form').addEventListener('submit', async (e) => {
     submitted_at: new Date().toISOString()
   };
   try {
-    const { error } = await db.from(TABLE).insert([payload]);
-    if (error) throw error;
+    const cols = Object.keys(payload);
+    const vals = Object.values(payload);
+    const ph = vals.map((_,i) => '$' + (i+1)).join(', ');
+    await db.query('INSERT INTO ae_applications (' + cols.join(', ') + ') VALUES (' + ph + ')', vals);
     document.getElementById('app-form').style.display = 'none';
     document.getElementById('stepper').style.display = 'none';
     document.getElementById('success-screen').classList.add('show');
   } catch(err) {
-    alert('Submission failed: ' + (err.message || 'Please check your Supabase config.'));
+    alert('Submission failed: ' + (err.message || 'Please check your Neon config.'));
     btn.disabled = false; btn.textContent = 'Submit Application →';
   }
 });
@@ -1139,9 +1167,8 @@ function showAdminPanel() {
 async function loadSubmissions() {
   document.getElementById('table-body').innerHTML = '<div class="loading">Loading…</div>';
   try {
-    const { data, error } = await db.from(TABLE).select('*').order('submitted_at', { ascending: false });
-    if (error) throw error;
-    renderTable(data);
+    const rows = await db.query('SELECT * FROM ae_applications ORDER BY submitted_at DESC');
+    renderTable(rows);
   } catch(err) {
     document.getElementById('table-body').innerHTML = `<div class="empty-state" style="color:#dc2626">Error: ${err.message}</div>`;
   }
