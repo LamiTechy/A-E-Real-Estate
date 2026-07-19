@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>A&E Real Estate and Properties — Rental Application</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -853,68 +854,35 @@ tr:hover td { background: var(--gold-pale); }
         </div>
       </div>
 
-      <!-- PROPERTY & LEASE -->
+      <!-- PROPERTY QUESTIONS -->
       <div class="fsection">
         <div class="fsection-head">
           <div class="fsection-icon"><i data-lucide="home" style="width:18px;height:18px;stroke:var(--gold);stroke-width:2;"></i></div>
           <div>
-            <div class="fsection-title">Property & Lease Details</div>
-            <div class="fsection-sub">Your rental preferences and qualifications</div>
+            <div class="fsection-title">Property Questions</div>
+            <div class="fsection-sub">Help us understand your situation</div>
           </div>
         </div>
         <div class="fgrid">
           <div class="ffield">
-            <label>Desired Lease Term</label>
-            <select id="leaseTerm">
-              <option value="">Select term...</option>
-              <option value="6 months">6 Months</option>
-              <option value="12 months">12 Months</option>
-              <option value="18 months">18 Months</option>
-              <option value="24 months">24 Months</option>
-              <option value="Month-to-month">Month-to-Month</option>
-            </select>
-          </div>
-          <div class="ffield">
-            <label>Annual Household Income <span class="req">*</span></label>
-            <input type="text" id="income" placeholder="$60,000" required/>
-          </div>
-          <div class="ffield">
-            <label>Credit Score Range</label>
-            <select id="creditScore">
-              <option value="">Select range...</option>
-              <option value="Excellent (720+)">Excellent (720+)</option>
-              <option value="Good (680-719)">Good (680-719)</option>
-              <option value="Fair (640-679)">Fair (640-679)</option>
-              <option value="Below 640">Below 640</option>
-            </select>
-          </div>
-          <div class="ffield">
-            <label>Additional Notes</label>
-            <input type="text" id="notes" placeholder="Special requests, questions..."/>
-          </div>
-        </div>
-        <div style="margin-top:20px;padding-top:20px;border-top:2px solid var(--gold-subtle);">
-          <div class="fgrid" style="grid-template-columns:1fr 1fr 1fr;">
-            <div class="ffield">
-              <label>Do you have a vehicle?</label>
-              <div class="toggle-group">
-                <button type="button" class="toggle-btn" onclick="selectToggle('vehicle','YES',this)">✓ Yes</button>
-                <button type="button" class="toggle-btn" onclick="selectToggle('vehicle','NO',this)">✗ No</button>
-              </div>
+            <label>Do you have a vehicle?</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="selectToggle('vehicle','YES',this)">✓ Yes</button>
+              <button type="button" class="toggle-btn" onclick="selectToggle('vehicle','NO',this)">✗ No</button>
             </div>
-            <div class="ffield">
-              <label>Do you have pets?</label>
-              <div class="toggle-group">
-                <button type="button" class="toggle-btn" onclick="selectToggle('pets','YES',this)">✓ Yes</button>
-                <button type="button" class="toggle-btn" onclick="selectToggle('pets','NO',this)">✗ No</button>
-              </div>
+          </div>
+          <div class="ffield">
+            <label>Do you have pets?</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="selectToggle('pets','YES',this)">✓ Yes</button>
+              <button type="button" class="toggle-btn" onclick="selectToggle('pets','NO',this)">✗ No</button>
             </div>
-            <div class="ffield">
-              <label>Been evicted before?</label>
-              <div class="toggle-group">
-                <button type="button" class="toggle-btn" onclick="selectToggle('evicted','YES',this)">✓ Yes</button>
-                <button type="button" class="toggle-btn" onclick="selectToggle('evicted','NO',this)">✗ No</button>
-              </div>
+          </div>
+          <div class="ffield">
+            <label>Have you been evicted before?</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="selectToggle('evicted','YES',this)">✓ Yes</button>
+              <button type="button" class="toggle-btn" onclick="selectToggle('evicted','NO',this)">✗ No</button>
             </div>
           </div>
         </div>
@@ -1100,27 +1068,12 @@ tr:hover td { background: var(--gold-pale); }
 </div>
 
 <script>
-const NEON_CONNECTION_STRING = 'postgresql://neondb_owner:npg_1jZkIY0qSgyH@ep-quiet-cell-atnvzqn9-pooler.c-9.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+const SUPABASE_URL = 'https://utcvvicmvbstdrmhkzlk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Y3Z2aWNtdmJzdGRybWhremxrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzM5NjMsImV4cCI6MjA4OTY0OTk2M30.agHRpX57eL3nXwiWbbOtD-srlyR-sgB_E4q-vdtpDXc';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const ADMIN_PASSWORD = 'admin123';
-
-function createNeonClient(connStr) {
-  const u = new URL(connStr);
-  const auth = btoa(decodeURIComponent(u.username) + ':' + decodeURIComponent(u.password));
-  const endpoint = 'https://' + u.hostname + '/sql';
-  return {
-    query: async (sql, params) => {
-      const r = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Authorization': 'Basic ' + auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: sql, params: params || [] })
-      });
-      if (!r.ok) { const t = await r.text(); throw new Error(t); }
-      return r.json();
-    }
-  };
-}
-
-const db = createNeonClient(NEON_CONNECTION_STRING);
+const TABLE = 'a_applications';
 
 // ROUTING
 function route() {
@@ -1209,10 +1162,6 @@ document.getElementById('app-form').addEventListener('submit', async (e) => {
     moving_date: document.getElementById('movingDate').value || null,
     occupation: document.getElementById('occupation').value.trim(),
     occupants: document.getElementById('occupants').value || null,
-    lease_term: document.getElementById('leaseTerm').value,
-    annual_income: document.getElementById('income').value.trim(),
-    credit_score: document.getElementById('creditScore').value,
-    notes: document.getElementById('notes').value.trim(),
     has_vehicle: radioValues.vehicle,
     has_pets: radioValues.pets,
     been_evicted: radioValues.evicted,
@@ -1226,14 +1175,12 @@ document.getElementById('app-form').addEventListener('submit', async (e) => {
     submitted_at: new Date().toISOString()
   };
   try {
-    const cols = Object.keys(payload);
-    const vals = Object.values(payload);
-    const ph = vals.map((_,i) => '$' + (i+1)).join(', ');
-    await db.query('INSERT INTO ae_applications (' + cols.join(', ') + ') VALUES (' + ph + ')', vals);
+    const { error } = await db.from(TABLE).insert([payload]);
+    if (error) throw error;
     document.getElementById('app-form').style.display = 'none';
     document.getElementById('success-screen').classList.add('show');
   } catch(err) {
-    alert('Submission failed: ' + (err.message || 'Please check your Neon config.'));
+    alert('Submission failed: ' + (err.message || err));
     btn.disabled = false; btn.textContent = 'Submit Application →';
   }
 });
@@ -1265,8 +1212,9 @@ function showAdminPanel() {
 async function loadSubmissions() {
   document.getElementById('table-body').innerHTML = '<div class="loading">Loading…</div>';
   try {
-    const rows = await db.query('SELECT * FROM ae_applications ORDER BY submitted_at DESC');
-    renderTable(rows);
+    const { data, error } = await db.from(TABLE).select('*').order('submitted_at', { ascending: false });
+    if (error) throw error;
+    renderTable(data);
   } catch(err) {
     document.getElementById('table-body').innerHTML = `<div class="empty-state" style="color:#e11d48">Error: ${err.message}</div>`;
   }
@@ -1330,15 +1278,6 @@ function openModal(index) {
         <div class="modal-field"><label>Moving Date</label>${val(r.moving_date)}</div>
         <div class="modal-field"><label>Occupation</label>${val(r.occupation)}</div>
         <div class="modal-field"><label>No. of Occupants</label>${val(r.occupants)}</div>
-      </div>
-    </div>
-    <div class="modal-section">
-      <div class="modal-section-title">Property & Lease</div>
-      <div class="modal-grid">
-        <div class="modal-field"><label>Lease Term</label>${val(r.lease_term)}</div>
-        <div class="modal-field"><label>Annual Income</label>${val(r.annual_income)}</div>
-        <div class="modal-field"><label>Credit Score</label>${val(r.credit_score)}</div>
-        <div class="modal-field"><label>Notes</label>${val(r.notes)}</div>
       </div>
     </div>
     <div class="modal-section">
